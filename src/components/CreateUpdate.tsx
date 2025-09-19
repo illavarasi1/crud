@@ -1,9 +1,13 @@
 import { TableContainer, Paper, Table, TableBody, TableRow, TableCell, TextField, Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import type { Users } from "../shared/models/User.model";
-import { createUser } from "../data/http.service";
+import { createUser, updateUser } from "../data/http.service";
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Pattern } from "@mui/icons-material";
 
-const Create = () => {
+const CreateUpdate = () => {
 
 const {
     register,
@@ -11,9 +15,22 @@ const {
     reset,
     formState: {errors}
 }=useForm<Users>();
+const location=useLocation();
+    const userData:Users=useSelector((state:any)=>state.User)
+
+useEffect(()=>{
+if (location.pathname==='/update'){
+reset(userData)
+}
+},[])
 const onsubmit=async(userData:Users)=>{
-console.log(userData)
-await createUser(userData)
+    if (location.pathname==='/update'){
+        await updateUser(userData)
+    }else{
+
+        console.log(userData)
+        await createUser(userData)
+    }
 }
     return (
         <>
@@ -26,14 +43,26 @@ await createUser(userData)
                             <TableRow>
                                 <TableCell>Name</TableCell>
                                 <TableCell align="right">
-                                    <TextField {...register('name',{required:"name is required",minLength:5,maxLength:20})} className="w-full" label="Name" variant="outlined" />
+                                    <TextField {...register('name',
+                                        {required:"name is required",
+                                        minLength:{
+                                            value:5,
+                                            message:"name should be min of 5 charactors"
+                                        },
+                                        maxLength:{
+                                            value:20,
+                                            message:"name should not exid 20 characters"
+                                        }})} className="w-full" label="Name" variant="outlined" />
                                     <span className="text-red-500 italic">{errors.name && errors.name.message}  </span>
                                 </TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell>Email</TableCell>
                                 <TableCell align="right">
-                                    <TextField {...register('email',{required:"Email is required"})} className="w-full" label="Email" variant="outlined" />
+                                    <TextField {...register('email',{required:"Email is required",pattern:{
+                                        value:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                                        message:"email is invalid"
+                                        }})} className="w-full" label="Email" variant="outlined" />
                                                                         <span className="text-red-500 italic">{errors.email && errors.email.message}  </span>
                                 </TableCell>
                             </TableRow>
@@ -56,7 +85,7 @@ await createUser(userData)
 
                                 <TableCell colSpan={2} align="right">
                                     <Button className="mr-5" type="button" variant="outlined" onClick={()=>{reset()}}>Reset Form</Button>
-                                    <Button type="submit" variant="outlined"> Create user</Button>
+                                    <Button type="submit" variant="outlined"> {location.pathname==='/update'?'update':'create'}User</Button>
                                 </TableCell>
                             </TableRow>
 
@@ -68,4 +97,4 @@ await createUser(userData)
         </>
     )
 }
-export default Create;
+export default CreateUpdate;

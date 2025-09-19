@@ -22,7 +22,8 @@ const Grid = () => {
         await deleteUser(user.id)
     }
     const onUpdateClick = (user: Users) => {
-
+  dispatch(setUserData(user));
+  navigate('/update')
     }
     return (
         <>
